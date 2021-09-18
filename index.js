@@ -125,6 +125,7 @@ client.on('messageCreate', async message => {
 				{ name: '$iq', value: 'Accurately calculates your IQ.' },
 				{ name: '$iq top', value: 'Displays the IQ highscores.' },
 				{ name: '$iq reset', value: 'Resets your IQ highscore.' },
+				{ name: '$status', value: 'Returns status information.' },
 			)
 			.setTimestamp();
 
@@ -160,6 +161,14 @@ client.on('messageCreate', async message => {
 		}
 
 		const command = client.commands.get('iq-top');
+		command.execute(message);
+	}
+	else if (message.content === '$status') {
+		if (await doTimeout(message)) {
+			return;
+		}
+
+		const command = client.commands.get('status');
 		command.execute(message);
 	}
 });
