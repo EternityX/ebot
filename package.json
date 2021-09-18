@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js --prod"
   },
   "author": "eternity",
   "dependencies": {
@@ -16,6 +16,7 @@
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.1.0",
     "humanize-duration": "^3.27.0",
+    "node-os-utils": "^1.3.5",
     "sequelize": "^6.6.5",
     "sqlite3": "^5.0.2"
   },

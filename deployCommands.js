@@ -16,11 +16,14 @@ for (const file of commandFiles) {
 
 const rest = new REST({ version: '9' }).setToken(token);
 
+const prod = process.argv.includes('--prod') || process.argv.includes('-p');
+
 (async () => {
 	try {
+		const route = prod ? Routes.applicationCommands(clientId) : Routes.applicationGuildCommands(clientId, guildId);
+
 		await rest.put(
-			Routes.applicationCommands(clientId),
-			//Routes.applicationGuildCommands(clientId, guildId),
+			route,
 			{ body: commands },
 		);
 
