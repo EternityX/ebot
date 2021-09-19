@@ -4,16 +4,13 @@ const { token, prefix } = require('./config.json');
 const fs = require('fs');
 const { Collection, MessageEmbed } = require('discord.js');
 
-const Keyv = require('keyv');
-const allowedChannels = new Keyv('sqlite://database.sqlite', { namespace: 'allowedChannels' });
-
 // Utils
 const chalk = require('chalk');
 const humanizeDuration = require('humanize-duration');
 const { logConsole } = require('./util.js');
 
 const { client } = require('./client.js');
-const { Users, userCollection } = require('./dbObject.js');
+const { Users, userCollection, allowedChannels } = require('./dbObject.js');
 
 // Setup commands
 client.commands = new Collection();
