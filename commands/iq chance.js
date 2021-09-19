@@ -1,12 +1,12 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
-/* const readline = require('readline');
+const readline = require('readline');
 const { logConsole } = require('../util.js');
 
 const Chance = require('chance');
-const chance = new Chance(); */
+const chance = new Chance();
 
-/* const min = 70;
+const min = 70;
 const max = 200;
 const mean = 98;
 const varianceFactor = 8.5;
@@ -34,7 +34,7 @@ iq.forEach(function(i) {
     process.stdout.write('Calculating probability for ' + i + '\n');
 });
 
-logConsole(`Finished generating IQ probabilities in ${calculatedIQs.length} iterations`); */
+logConsole(`Finished generating IQ probabilities in ${calculatedIQs.length} iterations`);
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -45,8 +45,7 @@ module.exports = {
                 .setDescription('An IQ (between 70-200) to calculate the chance for.')
                 .setRequired(true)),
     async execute(interaction) {
-        return await interaction.reply('This command is not yet implemented.');
-        /* let option = interaction.options.getInteger('number');
+        let option = interaction.options.getInteger('number');
         if (option < 70 || option > 200) {
             option = Math.min(Math.max(option, min), max);
         }
@@ -56,6 +55,6 @@ module.exports = {
 
         // console.log(option + ' was returned ' + count + ' times in ' + calculatedIQs.length + ' iterations.');
 
-        return await interaction.reply(`The probability of getting ${option} IQ is roughly 1 in ${fraction} (${((1 / fraction) * 100).toFixed(4)}%)`); */
+        return await interaction.reply(`The probability of getting ${option} IQ is roughly 1 in ${fraction} (${((1 / fraction) * 100).toFixed(4)}%)`);
     },
 };

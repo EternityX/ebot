@@ -10,7 +10,7 @@ const humanizeDuration = require('humanize-duration');
 const { logConsole } = require('./util.js');
 
 const { client } = require('./client.js');
-const { Users, userCollection, allowedChannels } = require('./dbObject.js');
+const { Users, userCollection } = require('./dbObject.js');
 
 // Setup commands
 client.commands = new Collection();
@@ -23,7 +23,7 @@ for (const file of commandFiles) {
 
 client.once('ready', async () => {
 	try {
-		allowedChannels.on('error', err => console.error('Keyv connection error:', err));
+		// allowedChannels.on('error', err => console.error('Keyv connection error:', err));
 
 		client.user.setActivity('e-bot | $help', { type: 'PLAYING' });
 		
@@ -36,10 +36,10 @@ client.once('ready', async () => {
 		client.guilds.cache.map(async guild => {
 			client.guilds.cache.get(guild.id).members.fetch();
 
-			const allowedChannel = await allowedChannels.get(guild.id);
-			if (!allowedChannel) {
-				await allowedChannels.set(guild.id, 1);
-			}
+			// const allowedChannel = await allowedChannels.get(guild.id);
+			// if (!allowedChannel) {
+				// await allowedChannels.set(guild.id, 1);
+			// }
 		});
 
 		logConsole(chalk.green('Ready!'));
@@ -61,10 +61,10 @@ client.on('interactionCreate', async interaction => {
 		}
 
 		if (interaction.commandName != 'limit-channel') {
-			const allowedChannel = await allowedChannels.get(interaction.guild.id);
-			if (allowedChannel > 1 && allowedChannel != interaction.channel.id) {
-				return await interaction.reply({ content: `${await client.channels.fetch(allowedChannel)}`, ephemeral: false });
-			}
+			// const allowedChannel = await allowedChannels.get(interaction.guild.id);
+			// if (allowedChannel > 1 && allowedChannel != interaction.channel.id) {
+			// 	return await interaction.reply({ content: `${await client.channels.fetch(allowedChannel)}`, ephemeral: false });
+			// }
 		}
 
 		if (interaction.commandName === 'uc') {
