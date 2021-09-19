@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
-const { iqCollection } = require('../dbObject.js');
+const { userCollection } = require('../dbObject.js');
 
 const chalk = require('chalk');
 const { logConsole } = require('../util.js');
@@ -13,7 +13,7 @@ module.exports = {
         const interaction_user = interaction.user ? interaction.user : interaction.author;
         const user_id = interaction_user.id;
 
-        const user = iqCollection.get(user_id);
+        const user = userCollection.get(user_id);
         if (!user || user.iq === 0) {
             return await interaction.reply('You have not calculated your IQ yet.');
         }
