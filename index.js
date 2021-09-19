@@ -1,8 +1,11 @@
 // Config
-const { token } = require('./config.json');
+const { token, prefix } = require('./config.json');
 
 const fs = require('fs');
 const { Collection, MessageEmbed } = require('discord.js');
+
+const Keyv = require('keyv');
+const allowedChannels = new Keyv('sqlite://database.sqlite', { namespace: 'allowedChannels' });
 
 // Utils
 const chalk = require('chalk');
@@ -10,7 +13,7 @@ const humanizeDuration = require('humanize-duration');
 const { logConsole } = require('./util.js');
 
 const { client } = require('./client.js');
-const { Users, iqCollection } = require('./dbObject.js');
+const { Users, userCollection } = require('./dbObject.js');
 
 // Setup commands
 client.commands = new Collection();
@@ -23,13 +26,24 @@ for (const file of commandFiles) {
 
 client.once('ready', async () => {
 	try {
-		client.user.setActivity('e-bot | $help', { type: 'PLAYING' });
+		allowedChannels.on('error', err => console.error('Keyv connection error:', err));
 
-		const storedIQs = await Users.findAll();
-		storedIQs.forEach(b => iqCollection.set(b.user_id, b));
+		client.user.setActivity('e-bot | $help', { type: 'PLAYING' });
 		
-		iqCollection.forEach(b => b.iq_cmd_delay = 0);
-		iqCollection.forEach(b => b.cmd_delay = 0);
+		const storedIQs = await Users.findAll();
+		storedIQs.forEach(b => userCollection.set(b.user_id, b));
+
+		userCollection.forEach(b => b.iq_cmd_delay = 0);
+		userCollection.forEach(b => b.cmd_delay = 0);
+
+		client.guilds.cache.map(async guild => {
+			client.guilds.cache.get(guild.id).members.fetch();
+
+			const allowedChannel = await allowedChannels.get(guild.id);
+			if (!allowedChannel) {
+				await allowedChannels.set(guild.id, 1);
+			}
+		});
 
 		logConsole(chalk.green('Ready!'));
 	}
@@ -49,6 +63,13 @@ client.on('interactionCreate', async interaction => {
 			return;
 		}
 
+		if (interaction.commandName != 'limit-channel') {
+			const allowedChannel = await allowedChannels.get(interaction.guild.id);
+			if (allowedChannel > 1 && allowedChannel != interaction.channel.id) {
+				return await interaction.reply({ content: `${await client.channels.fetch(allowedChannel)}`, ephemeral: false });
+			}
+		}
+
 		if (interaction.commandName === 'uc') {
 			await interaction.deferReply();
 			await command.execute(interaction);
@@ -66,7 +87,7 @@ client.on('interactionCreate', async interaction => {
 			});
 		}
 		else {
-			const user = iqCollection.get(interaction.user.id);
+			const user = userCollection.get(interaction.user.id);
 
 			if (user) {
 				if (user.cmd_delay) {
@@ -90,11 +111,11 @@ client.on('interactionCreate', async interaction => {
 });
 
 async function doTimeout(message) {
-	const user = iqCollection.get(message.author.id);
+	const user = userCollection.get(message.author.id);
 
 	if (user) {
 		if (user.cmd_delay) {
-			const remaining = humanizeDuration(user.cmd_delay - Date.now());		
+			const remaining = humanizeDuration(user.cmd_delay - Date.now());
 			return await message.reply(`You must wait ${remaining} before using another command.`);
 		}
 
@@ -108,7 +129,16 @@ async function doTimeout(message) {
 }
 
 client.on('messageCreate', async message => {
-	if (message.content === '$help') {
+	if (!message.content.startsWith(prefix) || message.author.bot) {
+		return;
+	}
+
+	const args = message.content.slice(prefix.length).trim().split(/ +/);
+	let command = args.shift().toLowerCase();
+
+	// args = args.toString().split(' ').join('/');
+
+	if (command === 'help') {
 		if (await doTimeout(message)) {
 			return;
 		}
@@ -118,58 +148,34 @@ client.on('messageCreate', async message => {
 			.setTitle('Commands')
 			.setThumbnail('https://i.imgur.com/5bPWrtH.gif')
 			.setDescription(
-				'The e in e-bot stands for epic.\nPrefer using Slash (/) commands.',
+				'The e in e-bot stands for epic.\nNot all commands are available with `$`, prefer using Slash `/` commands.',
 			)
 			.addFields(
-				{ name: '$uc', value: 'Returns a random UC thread.' },
+				{ name: '$uc', value: 'Displays a random UC thread.' },
 				{ name: '$iq', value: 'Accurately calculates your IQ.' },
-				{ name: '$iq top', value: 'Displays the IQ highscores.' },
+				{ name: '$iq top', value: 'Displays the IQ leaderboard for this server.' },
+				{ name: '$iq global', value: 'Displays the global IQ leaderboard.' },
 				{ name: '$iq reset', value: 'Resets your IQ highscore.' },
-				{ name: '$status', value: 'Returns status information.' },
+				{ name: '$status', value: 'Displays status information.' },
 			)
 			.setTimestamp();
 
 		await message.reply({ embeds: [embed] });
 	}
-	else if (message.content === '$uc') {
+	else {
 		if (await doTimeout(message)) {
 			return;
 		}
+		
+		// Format arguments into the new command
+		args.forEach(function(x) { 
+			command += `-${x}`;
+		});
 
-		const command = client.commands.get('uc');
-		command.execute(message);
-	}
-	else if (message.content === '$iq') {
-		if (await doTimeout(message)) {
-			return;
+		const c = client.commands.get(command);
+		if (c) {
+			c.execute(message);
 		}
-
-		const command = client.commands.get('iq');
-		command.execute(message);
-	}
-	else if (message.content === '$iq reset') {
-		if (await doTimeout(message)) {
-			return;
-		}
-
-		const command = client.commands.get('iq-reset');
-		command.execute(message);
-	}
-	else if (message.content === '$iq top') {
-		if (await doTimeout(message)) {
-			return;
-		}
-
-		const command = client.commands.get('iq-top');
-		command.execute(message);
-	}
-	else if (message.content === '$status') {
-		if (await doTimeout(message)) {
-			return;
-		}
-
-		const command = client.commands.get('status');
-		command.execute(message);
 	}
 });
 

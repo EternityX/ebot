@@ -9,7 +9,7 @@ const prod = process.argv.includes('--prod') || process.argv.includes('-p');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('status')
-        .setDescription('Returns status information.'),
+        .setDescription('Displays status information.'),
     async execute(interaction) {
         const embed = new MessageEmbed()
             .setColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`)

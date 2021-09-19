@@ -3,7 +3,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const Chance = require('chance');
 const chance = new Chance();
 
-const { Users, iqCollection } = require('../dbObject.js');
+const { Users, userCollection } = require('../dbObject.js');
 
 const chalk = require('chalk');
 const humanizeDuration = require('humanize-duration');
@@ -11,7 +11,7 @@ const { logConsole } = require('../util.js');
 
 function weightedRandomDistrib(min, max, mean, varianceFactor) {
     const prob = [], seq = [];
-    for (let i = min; i < max; i++) {
+    for (let i = min; i <= max; i++) {
         prob.push(Math.pow(max - Math.abs(mean - i), varianceFactor));
         seq.push(i);
     }
@@ -53,14 +53,14 @@ module.exports = {
     async execute(interaction) {
         const interaction_user = interaction.user ? interaction.user : interaction.author;
         const user_id = interaction_user.id;
-
+        
         // 70-200 with mean average of 98
-        const iq = weightedRandomDistrib(70, 200, 98, 10);
+        const iq = weightedRandomDistrib(70, 200, 98, 8.5);
 
-        const user = iqCollection.get(user_id);
+        const user = userCollection.get(user_id);
         if (!user) {
             const newUser = await Users.create({ user_id: user_id, iq: iq });
-            iqCollection.set(user_id, newUser);
+            userCollection.set(user_id, newUser);
             logConsole(chalk.bgCyan(`Created user for ${user_id}`));
 
             return await interaction.reply(getMessage(iq));

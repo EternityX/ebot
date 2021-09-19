@@ -10,6 +10,9 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 });
 
 const Users = require('./models/users.js')(sequelize, Sequelize.DataTypes);
-const iqCollection = new Collection();
+const userCollection = new Collection();
 
-module.exports = { Users, iqCollection };
+const Keyv = require('keyv');
+const allowedChannels = new Keyv('sqlite://database.sqlite', { namespace: 'allowedChannels' });
+
+module.exports = { Users, userCollection, allowedChannels };

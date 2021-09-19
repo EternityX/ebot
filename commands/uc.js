@@ -41,7 +41,7 @@ const fetchThreadData = async () => {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('uc')
-        .setDescription('Returns an unknowncheats thread.'),
+        .setDescription('Displays a random UC thread.'),
     async execute(interaction) {
         let data;
 
